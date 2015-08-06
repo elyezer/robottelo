@@ -245,9 +245,9 @@ class RepositorySyncTestCase(APITestCase):
         @Assert: Repository synced should fetch the data successfully.
 
         """
-        cloned_manifest_path = manifests.clone()
         org = entities.Organization().create()
-        org.upload_manifest(path=cloned_manifest_path)
+        with open(manifests.clone()) as handle:
+            entities.Subscription().upload({'organization_id': org.id}, handle)
         repo_id = utils.enable_rhrepo_and_fetchid(
             'x86_64',
             org.id,

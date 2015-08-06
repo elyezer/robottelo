@@ -69,12 +69,10 @@ class TestContentViewsUI(UITestCase):
             ).create_json()
             repo_id = repo_attrs['id']
         elif rh_repo:
-            # Clone the manifest and fetch it's path.
-            manifest_path = manifests.clone()
-            # Uploads the manifest and returns the result.
-            entities.Organization(id=org_id).upload_manifest(
-                path=manifest_path
-            )
+            # Clone the manifest and upload it.
+            with open(manifests.clone()) as handle:
+                entities.Subscription().upload(
+                    {'organization_id': org_id}, handle)
             # Enables the RedHat repo and fetches it's Id.
             repo_id = utils.enable_rhrepo_and_fetchid(
                 rh_repo['basearch'],

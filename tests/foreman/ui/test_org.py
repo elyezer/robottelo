@@ -238,8 +238,9 @@ class Org(UITestCase):
         @assert: Organization is deleted successfully.
 
         """
-        entities.Organization(name=org_name).create().upload_manifest(
-            path=manifests.clone())
+        org = entities.Organization(name=org_name).create()
+        with open(manifests.clone()) as handle:
+            entities.Subscription().upload({'organization_id': org.id}, handle)
         with Session(self.browser) as session:
             make_lifecycle_environment(session, org_name, name='DEV')
             make_lifecycle_environment(

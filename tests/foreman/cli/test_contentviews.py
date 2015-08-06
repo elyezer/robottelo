@@ -5,7 +5,7 @@ import unittest
 
 from ddt import ddt
 from fauxfactory import gen_alphanumeric, gen_string
-from nailgun.entities import Organization
+from nailgun import entities
 from robottelo.cli.contentview import ContentView
 from robottelo.cli.factory import (
     CLIFactoryError,
@@ -88,10 +88,11 @@ class TestContentView(CLITestCase):
             return
 
         TestContentView.rhel_content_org = make_org()
-        manifest = manifests.clone()
-        Organization(
-            id=TestContentView.rhel_content_org['id']
-        ).upload_manifest(manifest)
+        with open(manifests.clone()) as handle:
+            entities.Subscription().upload(
+                {'organization_id': TestContentView.rhel_content_org['id']},
+                handle
+            )
 
         result = RepositorySet.enable({
             'name': (

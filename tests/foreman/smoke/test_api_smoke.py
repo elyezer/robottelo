@@ -984,8 +984,10 @@ class TestSmoke(TestCase):
         ).create()
 
         # step 2: Upload manifest
-        manifest_path = manifests.clone()
-        org.upload_manifest(path=manifest_path)
+        sub = entities.Subscription()
+        payload = {'organization_id': org.id}
+        with open(manifests.clone()) as handle:
+            sub.upload(payload, handle)
         # step 3.1: Enable RH repo and fetch repository_id
         repository = entities.Repository(id=utils.enable_rhrepo_and_fetchid(
             basearch='x86_64',
@@ -1023,7 +1025,7 @@ class TestSmoke(TestCase):
         # step 7.1: Walk through the list of subscriptions.
         # Find the "Red Hat Employee Subscription" and attach it to the
         # recently-created activation key.
-        for subscription in org.subscriptions():
+        for subscription in sub.subscriptions(payload):
             if subscription['product_name'] == DEFAULT_SUBSCRIPTION_NAME:
                 # 'quantity' must be 1, not subscription['quantity']. Greater
                 # values produce this error: "RuntimeError: Error: Only pools

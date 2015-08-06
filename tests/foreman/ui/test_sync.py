@@ -72,12 +72,9 @@ class Sync(UITestCase):
         """
 
         repos = self.sync.create_repos_tree(RHCT)
-        manifest_path = manifests.clone()
-        # upload_file function should take care of uploading to sauce labs.
-        upload_file(manifest_path, remote_file=manifest_path)
-        entities.Organization(
-            id=self.org_id
-        ).upload_manifest(path=manifest_path)
+        with open(manifests.clone()) as handle:
+            entities.Subscription().upload(
+                {'organization_id': self.org_id}, handle)
         with Session(self.browser) as session:
             session.nav.go_to_select_org(self.org_name)
             session.nav.go_to_red_hat_repositories()

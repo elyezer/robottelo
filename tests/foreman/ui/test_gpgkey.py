@@ -434,8 +434,8 @@ class GPGKey(UITestCase):
             organization=self.org_id,
             content_view=content_view.id,
         ).create_json()['id']
-        for subscription in entities.Organization(
-                id=self.org_id).subscriptions():
+        for subscription in entities.Subscription().subscriptions(
+                {'organization_id': self.org_id}):
             if subscription['product_name'] == product_name:
                 entities.ActivationKey(id=ak_id).add_subscriptions({
                     'quantity': 1,

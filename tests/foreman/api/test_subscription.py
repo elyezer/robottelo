@@ -21,9 +21,9 @@ class SubscriptionsTestCase(APITestCase):
         @Feature: Subscriptions
 
         """
-        cloned_manifest_path = manifests.clone()
         org = entities.Organization().create()
-        org.upload_manifest(path=cloned_manifest_path)
+        with open(manifests.clone()) as handle:
+            entities.Subscription().upload({'organization_id': org.id}, handle)
 
     def test_positive_delete_1(self):
         """@Test: Delete an Uploaded manifest.
@@ -35,10 +35,13 @@ class SubscriptionsTestCase(APITestCase):
         """
         cloned_manifest_path = manifests.clone()
         org = entities.Organization().create()
-        org.upload_manifest(path=cloned_manifest_path)
-        self.assertGreater(len(org.subscriptions()), 0)
-        org.delete_manifest()
-        self.assertEqual(len(org.subscriptions()), 0)
+        sub = entities.Subscription()
+        payload = {'organization_id': org.id}
+        with open(cloned_manifest_path) as handle:
+            sub.upload(payload, handle)
+        self.assertGreater(len(sub.subscriptions(payload)), 0)
+        sub.delete_manifest(payload)
+        self.assertEqual(len(sub.subscriptions(payload)), 0)
 
     def test_negative_create_1(self):
         """@Test: Upload the same manifest to two organizations.
@@ -49,8 +52,12 @@ class SubscriptionsTestCase(APITestCase):
 
         """
         manifest_path = manifests.clone()
+        sub = entities.Subscription()
         orgs = [entities.Organization().create() for _ in range(2)]
-        orgs[0].upload_manifest(manifest_path)
+        with open(manifest_path) as handle:
+            sub.upload({'organization_id': orgs[0].id}, handle)
+        payload = {'organization_id': orgs[1].id}
         with self.assertRaises(TaskFailedError):
-            orgs[1].upload_manifest(manifest_path)
-        self.assertEqual(len(orgs[1].subscriptions()), 0)
+            with open(manifest_path) as handle:
+                sub.upload(payload, handle)
+        self.assertEqual(len(sub.subscriptions(payload).subscriptions()), 0)

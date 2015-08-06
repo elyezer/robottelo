@@ -27,9 +27,12 @@ class RHAITestCase(UITestCase):
         org = entities.Organization(
             name='insights_{0}'.format(gen_string('alpha', 6))
         ).create()
+        sub = entities.Subscription()
+        payload = {'organization_id': org.id}
 
         # Upload manifest
-        org.upload_manifest(path=manifests.clone())
+        with open(manifests.clone()) as handle:
+            sub.upload(payload, handle)
 
         # Create activation key using default CV and library environment
         activation_key = entities.ActivationKey(
@@ -43,7 +46,7 @@ class RHAITestCase(UITestCase):
         # step 7.1: Walk through the list of subscriptions.
         # Find the "Red Hat Employee Subscription" and attach it to the
         # recently-created activation key.
-        for subscription in org.subscriptions():
+        for subscription in sub.subscriptions(payload):
             if subscription['product_name'] == DEFAULT_SUBSCRIPTION_NAME:
                 # 'quantity' must be 1, not subscription['quantity']. Greater
                 # values produce this error: "RuntimeError: Error: Only pools

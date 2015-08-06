@@ -849,7 +849,11 @@ class CVRedHatContent(APITestCase):
         super(CVRedHatContent, cls).setUpClass()
 
         cls.org = entities.Organization().create()
-        cls.org.upload_manifest(path=manifests.clone())
+        with open(manifests.clone()) as handle:
+            entities.Subscription().upload(
+                {'organization_id': cls.org.id},
+                handle
+            )
         repo_id = utils.enable_rhrepo_and_fetchid(
             basearch='x86_64',
             org_id=cls.org.id,
